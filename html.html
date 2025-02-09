@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            position: relative;
+            perspective: 1000px;
+            margin: 20px;
+            max-width: 100%;
+        }
+
+        .envelope {
+            width: 320px;
+            height: 220px;
+            background-color: #ff4081;
+            position: relative;
+            border-radius: 10px;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 1s;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .envelope.open {
+            transform: rotateX(0deg);
+        }
+
+        .envelope::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 160px solid transparent;
+            border-right: 160px solid transparent;
+            border-top: 110px solid #ff80ab;
+            transform-origin: top;
+            transition: transform 0.5s;
+        }
+
+        .envelope.open::before {
+            transform: rotateX(180deg);
+        }
+
+        .card {
+            position: absolute;
+            width: 280px;
+            height: 400px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            opacity: 0;
+            transform: translateY(20px) rotateX(180deg);
+            transition: all 0.5s;
+            overflow-y: auto;
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0) rotateX(0deg);
+        }
+
+        .image-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .image-container img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .image-container img:hover {
+            transform: scale(1.1);
+        }
+
+        .heart {
+            color: #ff4081;
+            font-size: 30px;
+            margin: 10px 0;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .message {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #333;
+            margin: 15px 0;
+        }
+
+        .date {
+            font-weight: bold;
+            color: #ff4081;
+            margin: 15px 0;
+            padding: 10px;
+            border: 2px dashed #ff4081;
+            border-radius: 8px;
+        }
+
+        .floating-hearts {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .floating-heart {
+            position: absolute;
+            font-size: 20px;
+            animation: float 4s linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-20vh) scale(1);
+                opacity: 0;
+            }
+        }
+
+        .music-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ff4081;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .music-control:hover {
+            transform: scale(1.1);
+        }
+
+        .quiz-container {
+            display: none;
+            text-align: left;
+            margin: 15px 0;
+            padding: 10px;
+            background: #fff5f8;
+            border-radius: 8px;
+        }
+
+        .quiz-container button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: #fff;
+            border: 2px solid #ff4081;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .quiz-container button:hover {
+            background: #ff4081;
+            color: white;
+        }
+
+        .quiz-container button.correct {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+
+        .quiz-container button.incorrect {
+            background: #f44336;
+            color: white;
+            border-color: #f44336;
+        }
+
+        .final-message {
+            display: none;
+            padding: 15px;
+            background: #ff4081;
+            color: white;
+            border-radius: 8px;
+            margin-top: 15px;
+            animation: fadeIn 1s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .question {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ff4081;
+        }
+
+        .current-progress {
+            text-align: center;
+            color: #ff4081;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 400px) {
+            .envelope {
+                width: 280px;
+                height: 190px;
+            }
+            .envelope::before {
+                border-left: 140px solid transparent;
+                border-right: 140px solid transparent;
+                border-top: 95px solid #ff80ab;
+            }
+            .card {
+                width: 240px;
+                height: 380px;
+            }
+            .image-container img {
+                width: 100px;
+                height: 100px;
+            }
+        }
+        .date {
+            font-weight: bold;
+            color: white;  /* Changed to white */
+            margin: 15px 0;
+            padding: 10px;
+            border: 2px dashed white;  /* Changed to white */
+            border-radius: 8px;
+            background-color: rgba(255, 64, 129, 0.8);  /* Added semi-transparent background */
+        }
+
+        .location-details {
+            margin-top: 10px;
+            color: #ff4081;
+            font-size: 14px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .map-container {
+            margin: 15px 0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-hearts" id="floatingHearts"></div>
+    <div class="container">
+        <div class="envelope" id="envelope" onclick="openEnvelope()">
+            <div class="card" id="card">
+                <div class="heart">❤️</div>
+                <h2>Mi Amor</h2>
+                <div class="image-container">
+                    <img src="" alt="Foto 1" onclick="this.classList.toggle('enlarged')">
+                    <img src="" alt="Foto 2" onclick="this.classList.toggle('enlarged')">
+                    <img src="" alt="Foto 3" onclick="this.classList.toggle('enlarged')">
+                    <img src="" alt="Foto 4" onclick="this.classList.toggle('enlarged')">
+                </div>
+                <div class="message">
+                    <p>Ha pasado un año desde que decidimos empezar una historia juntos, y cada día ha sido más lindo que el anterior.</p>
+                    <p>Para descubrir que vamos a hacer, tienes que contestar unas preguntas</p>
+                    <div class="quiz-container" id="quizContainer">
+                        <div class="current-progress" id="progress">Pregunta 1 de 5</div>
+                        <div id="questionContainer"></div>
+                    </div>
+                    <div class="final-message" id="finalMessage">
+                        <h3>¡Por eso este 10 de febrero te quiero invitar a:</h3>
+                        <div class="date">
+                            <p>📍 En la U</p>
+                            <p>⏰ 4:00 PM</p>
+                        </div>
+                        <p>Cada momento contigo es lo mejor que me ha pasado, eres de las mejores cosas que tengo en mi vida marranita 🐖.</p>
+                        <p>Te amo ❤️</p>
+                        <div class="location-details">
+                            <p><strong>¿Cómo llegar?</strong></p>
+                            <p>Para que no te pierdas puedes coger el E32 en portal de las americas</p>
+                        </div>
+                        <div class="map-container">
+                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.76276205591!2d-74.0833047!3d4.636361499999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f9bd14943c13b%3A0x3de530667d9ff6b0!2sSede%20Bogot%C3%A1%20-%20Universidad%20Nacional%20de%20Colombia!5e0!3m2!1ses-419!2sco!4v1739082066239!5m2!1ses-419!2sco" width="100%" height="250" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        </div>
+                    </div>
+                </div>
+                <div class="heart">😽</div>
+            </div>
+        </div>
+    </div>
+    <button class="music-control" id="musicControl" onclick="toggleMusic()">🎵</button>
+    <audio id="backgroundMusic" loop>
+        <source src="https://raw.githubusercontent.com/tomas-arciniegas/Se-orita/3a9ca4c325f5b0676cc435a0f5b7f5499a5ecf62/Jean%20Pi%2C%20DEKKO%20-%20Se%C3%B1orita%20Remix%20(Official%20Video).mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        let musicStarted = false;
+        
+        const questions = [
+            {
+                question: "¿Quién dio el primer beso?",
+                options: [
+                    "Obvio Camila",
+                    "Camila",
+                    "Tomás",
+                    "Camila porque sabía que yo soy un man muy lindo"
+                ],
+                correct: 3
+            },
+            {
+                question: "¿Dónde fue nuestra primera salida?",
+                options: [
+                    "Calera",
+                    "Plaza de Bolívar",
+                    "Colpatria",
+                    "Compensar"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Cuál fue la primera vez que nos dijimos te amo?",
+                options: [
+                    "En la Calera",
+                    "En el carro",
+                    "Por chat",
+                    "En la casa"
+                ],
+                correct: 0
+            },
+            {
+                question: "¿Quién es la persona que te ama más?",
+                options: [
+                    "Yo",
+                    "Obviamente Yo",
+                    "Es obvio que yo",
+                    "Claramente yo porque nadie te puede amar más que yo"
+                ],
+                correct: 3
+            },
+            {
+                question: "¿Cuándo cumplimos un año?",
+                options: [
+                    "12 de febrero",
+                    "15 de febrero",
+                    "20 de febrero",
+                    "10 de febrero"
+                ],
+                correct: 3
+            }
+        ];
+
+        let currentQuestion = 0;
+
+        function openEnvelope() {
+            document.getElementById('envelope').classList.add('open');
+            setTimeout(() => {
+                document.getElementById('card').classList.add('visible');
+                startHearts();
+                if (!musicStarted) {
+                    playMusic();
+                }
+                document.querySelector('.quiz-container').style.display = 'block';
+                showQuestion();
+            }, 500);
+        }
+
+        function playMusic() {
+            const music = document.getElementById('backgroundMusic');
+            const musicControl = document.getElementById('musicControl');
+            
+            let playPromise = music.play();
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    musicControl.textContent = '🔊';
+                    musicStarted = true;
+                })
+                .catch(error => {
+                    console.log("Reproducción automática bloqueada por el navegador");
+                });
+            }
+        }
+
+        function toggleMusic() {
+            const music = document.getElementById('backgroundMusic');
+            const musicControl = document.getElementById('musicControl');
+            
+            if (music.paused) {
+                music.play();
+                musicControl.textContent = '🔊';
+                musicStarted = true;
+            } else {
+                music.pause();
+                musicControl.textContent = '🎵';
+            }
+        }
+
+        function startHearts() {
+            setInterval(createHeart, 300);
+        }
+
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('floating-heart');
+            heart.innerHTML = '❤️';
+            heart.style.left = Math.random() * 100 + 'vw';
+            document.getElementById('floatingHearts').appendChild(heart);
+            
+            heart.addEventListener('animationend', () => {
+                heart.remove();
+            });
+        }
+
+        function showQuestion() {
+            const questionContainer = document.getElementById('questionContainer');
+            const progressText = document.getElementById('progress');
+            const currentQ = questions[currentQuestion];
+            
+            progressText.textContent = `Pregunta ${currentQuestion + 1} de 5`;
+            
+            let html = `<div class="question">${currentQ.question}</div>`;
+            currentQ.options.forEach((option, index) => {
+                html += `<button onclick="checkAnswer(${index})">${option}</button>`;
+            });
+            
+            questionContainer.innerHTML = html;
+        }
+
+        function checkAnswer(selectedIndex) {
+            const buttons = document.querySelectorAll('#questionContainer button');
+            const currentQ = questions[currentQuestion];
+            
+            buttons.forEach(button => button.disabled = true);
+            
+            if (selectedIndex === currentQ.correct) {
+                buttons[selectedIndex].classList.add('correct');
+                setTimeout(() => {
+                    currentQuestion++;
+                    if (currentQuestion < questions.length) {
+                        showQuestion();
+                    } else {
+                        showFinalMessage();
+                    }
+                }, 1000);
+            } else {
+                buttons[selectedIndex].classList.add('incorrect');
+                buttons[currentQ.correct].classList.add('correct');
+                setTimeout(() => {
+                    showQuestion();
+                }, 1500);
+            }
+        }
+
+        function showFinalMessage() {
+            document.getElementById('quizContainer').style.display = 'none';
+            document.getElementById('finalMessage').style.display = 'block';
+        }
+
+        // Inicialización
+        window.onload = function() {
+            const images = document.querySelectorAll('.image-container img');
+            const imageUrls = [
+                'https://i.ibb.co/7JgpG68M/Imagen-de-Whats-App-2025-02-09-a-las-00-53-06-a626b00c.jpg',
+                'https://i.ibb.co/XHC6r6t/Imagen-de-Whats-App-2025-02-09-a-las-00-53-07-d73f79f2.jpg',
+                'https://i.ibb.co/8nRDnt4t/Imagen-de-Whats-App-2025-02-09-a-las-00-53-08-a14f0f79.jpg',
+                'https://i.ibb.co/PZc2PL8G/Imagen-de-Whats-App-2025-02-09-a-las-00-53-08-7db7f15d.jpg'
+            ];
+            
+            images.forEach((img, index) => {
+                if (imageUrls[index]) {
+                    img.src = imageUrls[index];
+                }
+            });
+
+            const music = document.getElementById('backgroundMusic');
+            music.src = 'https://raw.githubusercontent.com/tomas-arciniegas/Se-orita/3a9ca4c325f5b0676cc435a0f5b7f5499a5ecf62/Jean%20Pi%2C%20DEKKO%20-%20Se%C3%B1orita%20Remix%20(Official%20Video).mp3';
+            music.load();
+        };
+
+    </script>
+</body>
+</html>
