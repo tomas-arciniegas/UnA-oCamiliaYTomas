@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             margin: 0;
@@ -116,11 +117,12 @@
 
         .date {
             font-weight: bold;
-            color: #ff4081;
+            color: white;
             margin: 15px 0;
             padding: 10px;
-            border: 2px dashed #ff4081;
+            border: 2px dashed white;
             border-radius: 8px;
+            background-color: rgba(255, 64, 129, 0.8);
         }
 
         .floating-hearts {
@@ -237,35 +239,6 @@
             margin-bottom: 10px;
         }
 
-        @media (max-width: 400px) {
-            .envelope {
-                width: 280px;
-                height: 190px;
-            }
-            .envelope::before {
-                border-left: 140px solid transparent;
-                border-right: 140px solid transparent;
-                border-top: 95px solid #ff80ab;
-            }
-            .card {
-                width: 240px;
-                height: 380px;
-            }
-            .image-container img {
-                width: 100px;
-                height: 100px;
-            }
-        }
-        .date {
-            font-weight: bold;
-            color: white;  /* Changed to white */
-            margin: 15px 0;
-            padding: 10px;
-            border: 2px dashed white;  /* Changed to white */
-            border-radius: 8px;
-            background-color: rgba(255, 64, 129, 0.8);  /* Added semi-transparent background */
-        }
-
         .location-details {
             margin-top: 10px;
             color: #ff4081;
@@ -280,6 +253,57 @@
             margin: 15px 0;
             border-radius: 8px;
             overflow: hidden;
+        }
+
+        /* Ajustes específicos para móvil */
+        @media (max-width: 400px) {
+            body {
+                padding: 10px;
+                box-sizing: border-box;
+            }
+
+            .container {
+                margin: 10px;
+            }
+
+            .envelope {
+                width: 280px;
+                height: 190px;
+            }
+
+            .envelope::before {
+                border-left: 140px solid transparent;
+                border-right: 140px solid transparent;
+                border-top: 95px solid #ff80ab;
+            }
+
+            .card {
+                width: 240px;
+                height: 380px;
+                padding: 15px;
+            }
+
+            .image-container {
+                gap: 5px;
+            }
+
+            .image-container img {
+                width: 100px;
+                height: 100px;
+            }
+
+            .quiz-container button {
+                font-size: 14px;
+                padding: 12px;
+            }
+
+            .message {
+                font-size: 14px;
+            }
+
+            .map-container iframe {
+                height: 200px;
+            }
         }
     </style>
 </head>
@@ -515,3 +539,5 @@
     </script>
 </body>
 </html>
+
+
